@@ -11,7 +11,7 @@ defmodule ConduitWeb.FavoriteArticleController do
 
   def create(%{assigns: %{article: article}} = conn, _params) do
     user = Guardian.Plug.current_resource(conn)
-    author = Blog.get_author!(user.uuid)
+    author = Blog.get_author!(uuid: user.uuid)
 
     with {:ok, %Article{} = article} <- Blog.favorite_article(article, author) do
       conn
@@ -23,7 +23,7 @@ defmodule ConduitWeb.FavoriteArticleController do
 
   def delete(%{assigns: %{article: article}} = conn, _params) do
     user = Guardian.Plug.current_resource(conn)
-    author = Blog.get_author!(user.uuid)
+    author = Blog.get_author!(uuid: user.uuid)
 
     with {:ok, %Article{} = article} <- Blog.unfavorite_article(article, author) do
       conn

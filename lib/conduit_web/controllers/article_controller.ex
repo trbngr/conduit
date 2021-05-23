@@ -33,7 +33,7 @@ defmodule ConduitWeb.ArticleController do
 
   def create(conn, %{"article" => article_params}) do
     user = Guardian.Plug.current_resource(conn)
-    author = Blog.get_author!(user.uuid)
+    author = Blog.get_author!(uuid: user.uuid)
 
     with {:ok, %Article{} = article} <- Blog.publish_article(author, article_params) do
       conn

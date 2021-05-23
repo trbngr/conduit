@@ -4,9 +4,10 @@ defmodule Conduit.Router do
   alias Conduit.Accounts.Aggregates.User
 
   alias Conduit.Accounts.Commands.{
-    RegisterUser,
     UpdateUser
   }
+
+  alias Conduit.Accounts.Protocol.{RegisterUser, UpdateUser}
 
   alias Conduit.Blog.Aggregates.{Article, Author, Comment}
 

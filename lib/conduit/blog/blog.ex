@@ -6,11 +6,12 @@ defmodule Conduit.Blog do
   alias Conduit.Accounts.Projections.User
   alias Conduit.App
 
+  alias Conduit.Blog.Queries.GetAuthor
+  alias Conduit.Blog.Protocol.{CreateAuthor, FollowAuthor}
+
   alias Conduit.Blog.Commands.{
     FavoriteArticle,
-    FollowAuthor,
     CommentOnArticle,
-    CreateAuthor,
     DeleteComment,
     FavoriteArticle,
     PublishArticle,
@@ -30,18 +31,23 @@ defmodule Conduit.Blog do
 
   alias Conduit.Repo
 
-  @doc """
-  Get the author for a given uuid, or raise an `Ecto.NoResultsError` if not found.
-  """
-  def get_author!(uuid), do: Repo.get!(Author, uuid)
+  use Cqrs.BoundedContext
 
-  @doc """
-  Get the author for a given uuid, or nil if the user is nil.
-  """
-  def get_author(user)
   def get_author(nil), do: nil
-  def get_author(%User{uuid: user_uuid}), do: get_author(user_uuid)
-  def get_author(uuid) when is_bitstring(uuid), do: Repo.get(Author, uuid)
+  query GetAuthor
+
+  command CreateAuthor
+  command FollowAuthor, then: fetch_author(%{following: true})
+
+  defp fetch_author(attrs \\ %{}) do
+    fn result ->
+      with {:ok, %{aggregate_state: %{uuid: uuid}}} <- result do
+        %{user_uuid: uuid}
+        |> get_author()
+        |> Map.merge(attrs)
+      end
+    end
+  end
 
   @doc """
   Get an article by its URL slug, or return `nil` if not found
@@ -111,44 +117,25 @@ defmodule Conduit.Blog do
   def get_comment!(comment_uuid), do: Repo.get!(Comment, comment_uuid)
 
   @doc """
-  Create an author.
-
-  An author shares the same uuid as the user, but with a different prefix.
-  """
-  def create_author(%{user_uuid: uuid} = attrs) do
-    create_author =
-      attrs
-      |> CreateAuthor.new()
-      |> CreateAuthor.assign_uuid(uuid)
-
-    with :ok <- App.dispatch(create_author, consistency: :strong) do
-      get(Author, uuid)
-    else
-      reply -> reply
-    end
-  end
-
-  @doc """
   Update the profile (bio, image) of the author
   """
   def update_author_profile(%Author{} = author, _attrs \\ %{}) do
     {:ok, author}
   end
 
-  @doc """
-  Follow an author
-  """
-  def follow_author(%Author{uuid: author_uuid} = author, %Author{uuid: follower_uuid}) do
-    with :ok <-
-           App.dispatch(
-             FollowAuthor.new(author_uuid: author_uuid, follower_uuid: follower_uuid),
-             consistency: :strong
-           ) do
-      {:ok, %Author{author | following: true}}
-    else
-      reply -> reply
-    end
-  end
+  # @doc """
+  # Follow an author
+  # """
+  # def follow_author(%Author{uuid: author_uuid} = author, %Author{uuid: follower_uuid}) do
+  #   result =
+  #     %{author_uuid: author_uuid, follower_uuid: follower_uuid}
+  #     |> FollowAuthor.new()
+  #     |> FollowAuthor.dispatch()
+
+  #   with {:ok, _} <- result do
+  #     {:ok, %Author{author | following: true}}
+  #   end
+  # end
 
   @doc """
   unfollow an author

@@ -23,6 +23,13 @@ defmodule Conduit.Mixfile do
 
   defp deps do
     [
+      # New
+      {:cqrs_tools, "~> 0.3"},
+      # {:cqrs_tools, path: "/Users/christophermartin/code/personal/cqrs_tools"},
+      {:ecto, "~> 3.6"},
+      {:ecto_sql, "~> 3.6"},
+
+      # Cool
       {:bcrypt_elixir, "~> 1.0"},
       {:comeonin, "~> 4.0"},
       {:commanded, "~> 1.1"},
@@ -32,7 +39,6 @@ defmodule Conduit.Mixfile do
       {:cors_plug, "~> 1.4"},
       {:elixir_uuid, "~> 1.2"},
       {:plug_cowboy, "~> 2.1"},
-      {:exconstructor, "~> 1.1"},
       {:ex_machina, "~> 2.1", only: :test},
       {:gettext, "~> 0.11"},
       {:guardian, "~> 1.2"},
@@ -42,6 +48,9 @@ defmodule Conduit.Mixfile do
       {:phoenix_ecto, "~> 4.0"},
       {:postgrex, ">= 0.0.0"},
       {:slugger, "~> 0.2"},
+
+      # Remove
+      {:exconstructor, "~> 1.1"},
       {:vex, "~> 0.6"}
     ]
   end

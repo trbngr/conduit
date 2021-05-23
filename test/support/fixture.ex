@@ -67,7 +67,7 @@ defmodule Conduit.Fixture do
   end
 
   def get_author(%{user: user}) do
-    author = Blog.get_author!(user.uuid)
+    author = Blog.get_author!(uuid: user.uuid)
 
     [
       author: author

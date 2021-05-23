@@ -8,36 +8,21 @@ defmodule Conduit.Accounts.Aggregates.User do
 
   alias Conduit.Accounts.Aggregates.User
 
-  alias Conduit.Accounts.Commands.{
-    RegisterUser,
-    UpdateUser
-  }
-
-  alias Conduit.Accounts.Events.{
-    UserEmailChanged,
-    UsernameChanged,
-    UserPasswordChanged,
-    UserRegistered
-  }
+  alias Conduit.Accounts.Protocol.{RegisterUser, UserRegistered}
+  alias Conduit.Accounts.Protocol.{UpdateUser, UserEmailChanged, UsernameChanged, UserPasswordChanged}
 
   @doc """
   Register a new user
   """
   def execute(%User{uuid: nil}, %RegisterUser{} = register) do
-    %UserRegistered{
-      user_uuid: register.user_uuid,
-      username: register.username,
-      email: register.email,
-      hashed_password: register.hashed_password
-    }
+    UserRegistered.new(register)
   end
 
   @doc """
   Update a user's username, email, and password
   """
   def execute(%User{} = user, %UpdateUser{} = update) do
-    Enum.reduce([&username_changed/2, &email_changed/2, &password_changed/2], [], fn change,
-                                                                                     events ->
+    Enum.reduce([&username_changed/2, &email_changed/2, &password_changed/2], [], fn change, events ->
       case change.(user, update) do
         nil -> events
         event -> [event | events]
@@ -73,35 +58,13 @@ defmodule Conduit.Accounts.Aggregates.User do
 
   defp username_changed(%User{}, %UpdateUser{username: ""}), do: nil
   defp username_changed(%User{username: username}, %UpdateUser{username: username}), do: nil
-
-  defp username_changed(%User{uuid: user_uuid}, %UpdateUser{username: username}) do
-    %UsernameChanged{
-      user_uuid: user_uuid,
-      username: username
-    }
-  end
+  defp username_changed(%User{}, %UpdateUser{} = command), do: UsernameChanged.new(command)
 
   defp email_changed(%User{}, %UpdateUser{email: ""}), do: nil
   defp email_changed(%User{email: email}, %UpdateUser{email: email}), do: nil
-
-  defp email_changed(%User{uuid: user_uuid}, %UpdateUser{email: email}) do
-    %UserEmailChanged{
-      user_uuid: user_uuid,
-      email: email
-    }
-  end
+  defp email_changed(%User{}, %UpdateUser{} = command), do: UserEmailChanged.new(command)
 
   defp password_changed(%User{}, %UpdateUser{hashed_password: ""}), do: nil
-
-  defp password_changed(%User{hashed_password: hashed_password}, %UpdateUser{
-         hashed_password: hashed_password
-       }),
-       do: nil
-
-  defp password_changed(%User{uuid: user_uuid}, %UpdateUser{hashed_password: hashed_password}) do
-    %UserPasswordChanged{
-      user_uuid: user_uuid,
-      hashed_password: hashed_password
-    }
-  end
+  defp password_changed(%User{hashed_password: pass}, %UpdateUser{hashed_password: pass}), do: nil
+  defp password_changed(%User{}, %UpdateUser{} = command), do: UserPasswordChanged.new(command)
 end

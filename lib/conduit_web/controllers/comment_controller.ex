@@ -15,7 +15,7 @@ defmodule ConduitWeb.CommentController do
 
   def create(%{assigns: %{article: article}} = conn, %{"comment" => comment_params}) do
     user = Guardian.Plug.current_resource(conn)
-    author = Blog.get_author!(user.uuid)
+    author = Blog.get_author!(uuid: user.uuid)
 
     with {:ok, %Comment{} = comment} <- Blog.comment_on_article(article, author, comment_params) do
       conn
@@ -26,7 +26,7 @@ defmodule ConduitWeb.CommentController do
 
   def delete(conn, %{"uuid" => comment_uuid}) do
     user = Guardian.Plug.current_resource(conn)
-    author = Blog.get_author!(user.uuid)
+    author = Blog.get_author!(uuid: user.uuid)
     comment = Blog.get_comment!(comment_uuid)
 
     with :ok <- Blog.delete_comment(comment, author) do

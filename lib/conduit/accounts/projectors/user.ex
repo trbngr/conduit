@@ -4,14 +4,8 @@ defmodule Conduit.Accounts.Projectors.User do
     name: "Accounts.Projectors.User",
     consistency: :strong
 
-  alias Conduit.Accounts.Events.{
-    UserEmailChanged,
-    UsernameChanged,
-    UserPasswordChanged,
-    UserRegistered
-  }
-
   alias Conduit.Accounts.Projections.User
+  alias Conduit.Accounts.Protocol.{UserRegistered, UserEmailChanged, UsernameChanged, UserPasswordChanged}
 
   project(%UserRegistered{} = registered, fn multi ->
     Ecto.Multi.insert(multi, :user, %User{

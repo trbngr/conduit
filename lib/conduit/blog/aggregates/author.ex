@@ -7,23 +7,20 @@ defmodule Conduit.Blog.Aggregates.Author do
             followed_by_authors: MapSet.new()
 
   alias Conduit.Blog.Aggregates.Author
-  alias Conduit.Blog.Commands.{CreateAuthor, FollowAuthor, UnfollowAuthor}
-  alias Conduit.Blog.Events.{AuthorCreated, AuthorFollowed, AuthorUnfollowed}
+
+  alias Conduit.Blog.Protocol.{CreateAuthor, AuthorCreated}
+  alias Conduit.Blog.Protocol.{FollowAuthor, AuthorFollowed}
+
+  alias Conduit.Blog.Commands.{UnfollowAuthor}
+  alias Conduit.Blog.Events.{ AuthorUnfollowed}
 
   @doc """
   Creates an author
   """
   def execute(%Author{uuid: nil}, %CreateAuthor{} = create) do
-    %AuthorCreated{
-      author_uuid: create.author_uuid,
-      user_uuid: create.user_uuid,
-      username: create.username
-    }
+    AuthorCreated.new(create)
   end
 
-  @doc """
-  Follow an author
-  """
   def execute(%Author{uuid: author_uuid} = author, %FollowAuthor{follower_uuid: follower_uuid}) do
     case is_follower?(author, follower_uuid) do
       true ->
@@ -37,9 +34,6 @@ defmodule Conduit.Blog.Aggregates.Author do
     end
   end
 
-  @doc """
-  Unfollow an author
-  """
   def execute(%Author{uuid: author_uuid} = author, %UnfollowAuthor{unfollower_uuid: follower_uuid}) do
     case is_follower?(author, follower_uuid) do
       true ->

@@ -4,6 +4,10 @@ defmodule Conduit.Support.Middleware.Validate do
   alias Commanded.Middleware.Pipeline
   import Pipeline
 
+  def before_dispatch(%Pipeline{command: %{created_at: _}} = pipeline) do
+    pipeline
+  end
+
   def before_dispatch(%Pipeline{command: command} = pipeline) do
     case Vex.valid?(command) do
       true -> pipeline

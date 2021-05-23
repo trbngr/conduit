@@ -19,7 +19,7 @@ defmodule Conduit.Auth do
   def validate_password(password, hash), do: Bcrypt.checkpw(password, hash)
 
   defp user_by_email(email) do
-    case Accounts.user_by_email(email) do
+    case Accounts.get_user(email: email) do
       nil -> {:error, :unauthenticated}
       user -> {:ok, user}
     end

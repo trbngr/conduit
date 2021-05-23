@@ -30,7 +30,7 @@ defmodule ConduitWeb.UserController do
 
   def update(conn, %{"user" => user_params}) do
     user = Guardian.Plug.current_resource(conn)
-    author = Blog.get_author!(user.uuid)
+    author = Blog.get_author!(uuid: user.uuid)
 
     with {:ok, %User{} = user} <- Accounts.update_user(user, user_params),
          {:ok, %Author{} = author} <- Blog.update_author_profile(author, user_params),
